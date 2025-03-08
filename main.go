@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Raw Socket을 생성하기 위해 syscall 패키지를 이용하여 소켓을 생성합니다.
-	socket, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+	socket, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, syscall.ETH_P_ALL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Socket creation failed: %s\n", err)
 		os.Exit(1)

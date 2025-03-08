@@ -15,11 +15,21 @@ Go를 학습하기 위한 프로젝트 2번째. (1번째는 [port-scanner-go](ht
 // 일반적인 TCP/UDP 소켓으로 서버를 만든다면...
 listener, err := net.Listen("tcp", ":8080")
 
-// 시스템콜을 이용한 Socket 직접 생성
-socket, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(syscall.ETH_P_ALL)))
+// 하지만 지금처럼 Raw Socket을 만든다면 시스템콜을 이용한 Socket 직접 생성
+socket, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, syscall.ETH_P_ALL)
 ```
 
-(작성 중)
+### 일반적인 x86 시스템과 네트워크 규약간에 엔디안 차이로 인해 패킷에 Byte를 담을 때는 변환이 필요하다
+
+Intel x86 시스템에서는 리틀 엔디안을 사용하는 반면, 네트워크에서는 빅 엔디안을 쓰는 것이 규칙이다. 따라서 같은 값도(예를 들어 `syscall.ETH_P_ALL`) 시스템 내에서 사용될 때는(위의 예제처럼 소켓을 생성한다던지) 그대로 써도 되지만, 패킷에 담을 때는 빅 엔디안으로 변환해주어야한다. 그리고 이런 변환 과정을 Host to Network Short(`htons`)라고 부른다.
+
+```go
+// 아래 정보(Protocol)는 이더넷 헤더에 담기기 때문에 네트워크 규약에 맞춰 빅엔디안으로 변경 필요
+socketAddr := syscall.SockaddrLinklayer{
+    Ifindex:  iface.Index,
+    Protocol: htons(syscall.ETH_P_ALL),
+}
+```
 
 ## TODO
 - 커맨드 인자로 인터페이스 지정하기
